@@ -534,7 +534,7 @@ def is_date_filter(value, modifier, data, final, current_time):
         if (modifier == ".before" and value >= filter_date) or (modifier == ".after" and value <= filter_date):
             return True
     elif modifier == ".regex":
-        jailbreak = False
+        jailbreak = True
         for check_data in data:
             if re.compile(check_data).match(value.strftime("%m/%d/%Y")):
                 jailbreak = True
@@ -847,8 +847,8 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         if range_split:
             range_values = str(value).split(range_split)
             if len(range_values) == 2:
-                start = check_int(range_values[0], datatype=datatype, minimum=minimum, maximum=maximum)
-                end = check_int(range_values[1], datatype=datatype, minimum=minimum, maximum=maximum)
+                start = check_int(range_values[0])
+                end = check_int(range_values[1])
                 if start and end and start < end:
                     return f"{start}{range_split}{end}"
         else:

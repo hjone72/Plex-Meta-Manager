@@ -26,10 +26,8 @@ collections:
       event_id: ev0000003
       event_year: all
       category_filter:
-        - best motion picture of the year
         - best picture
-        - best picture, production
-        - best picture, unique and artistic production
+        - best motion picture of the year
       winning: true
 
   Oscars Best Director Winners:
@@ -59,7 +57,7 @@ dynamic_collections:
     sync: true
     data:
       event_id: ev0000003
-      starting: latest-4
+      starting: latest-5
       ending: latest
     title_format: Oscars Winners <<key_name>>
     template:

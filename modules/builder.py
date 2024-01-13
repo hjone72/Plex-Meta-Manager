@@ -1,7 +1,7 @@
 import os, re, time
 from arrapi import ArrException
 from datetime import datetime
-from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, jsonurl, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
+from modules import anidb, anilist, flixpatrol, icheckmovies, imdb, letterboxd, mal, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
 from modules.overlay import Overlay
 from modules.poster import PMMImage
@@ -16,7 +16,7 @@ logger = util.logger
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = ["item_episode_sorting", "item_keep_episodes", "item_delete_episodes", "item_season_display", "item_episode_sorting"]
 all_builders = anidb.builders + anilist.builders + flixpatrol.builders + icheckmovies.builders + imdb.builders + \
-               letterboxd.builders + mal.builders + plex.builders + reciperr.builders + jsonurl.builders + tautulli.builders + \
+               letterboxd.builders + mal.builders + plex.builders + reciperr.builders + tautulli.builders + \
                tmdb.builders + trakt.builders + tvdb.builders + mdblist.builders + radarr.builders + sonarr.builders
 show_only_builders = [
     "tmdb_network", "tmdb_show", "tmdb_show_details", "tvdb_show", "tvdb_show_details", "tmdb_airing_today",
@@ -59,8 +59,7 @@ item_details = ["non_item_remove_label", "item_label", "item_genre", "item_editi
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_folder", "radarr_monitor",
-    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache",
-    "radarr_monitor_existing"
+    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache"
 ]
 sonarr_details = [
     "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language",
@@ -154,7 +153,7 @@ custom_sort_builders = [
     "tautulli_popular", "tautulli_watched", "mdblist_list", "letterboxd_list", "icheckmovies_list", "flixpatrol_top",
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special", "mal_search",
-    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio", "json_url"
+    "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio"
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
@@ -1042,8 +1041,6 @@ class CollectionBuilder:
                     self._plex(method_name, method_data)
                 elif method_name in reciperr.builders:
                     self._reciperr(method_name, method_data)
-                elif method_name in jsonurl.builders:
-                    self._jsonurl(method_name, method_data)
                 elif method_name in tautulli.builders:
                     self._tautulli(method_name, method_data)
                 elif method_name in tmdb.builders:
@@ -1329,7 +1326,7 @@ class CollectionBuilder:
                 self.item_details[method_name] = str(method_data).lower() # noqa
 
     def _radarr(self, method_name, method_data):
-        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache", "radarr_monitor_existing"]:
+        if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
             self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
         elif method_name == "radarr_folder":
             self.radarr_details["folder"] = method_data
@@ -1844,11 +1841,6 @@ class CollectionBuilder:
         elif method_name == "stevenlu_popular":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
-    def _jsonurl(self, method_name, method_data):
-        if method_name == "json_url":
-            for json_url in util.get_list(method_data):
-                self.builders.append((method_name, json_url))
-
     def _mdblist(self, method_name, method_data):
         for mdb_dict in self.config.Mdblist.validate_mdblist_lists(self.Type, method_data):
             self.builders.append((method_name, mdb_dict))
@@ -2096,8 +2088,6 @@ class CollectionBuilder:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif "reciperr" in method or "stevenlu" in method:
             ids = self.config.Reciperr.get_imdb_ids(method, value)
-        elif "json_url" in method:
-            ids = self.config.JsonUrl.get_rating_keys(method, value)
         elif "mdblist" in method:
             ids = self.config.Mdblist.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
@@ -3181,7 +3171,7 @@ class CollectionBuilder:
             if summary[1]:
                 if str(summary[1]) != str(self.obj.summary):
                     try:
-                        self.obj.editSummary(str(summary[1]))
+                        self.obj.edit(summary=str(summary[1]))
                         logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
